@@ -1,0 +1,21 @@
+import java.rmi.RemoteException;
+
+public class GalbreathPlayerAgent implements referee.Player
+{
+
+	@Override
+	public int[] getMove(int[] board, boolean isWhite, int movesRemaining)
+			throws RemoteException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getName() throws RemoteException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

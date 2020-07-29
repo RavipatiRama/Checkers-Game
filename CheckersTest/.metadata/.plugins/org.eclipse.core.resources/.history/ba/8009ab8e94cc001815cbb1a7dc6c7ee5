@@ -1,0 +1,713 @@
+package gal;
+/*
+ * Joseph T. Galbreath III 
+ * E01155874 
+ * COSC 561 
+ * Rook Maze Problem
+ */
+
+import java.util.LinkedList;
+import java.util.List;
+
+public class GalbreathAgentFunction
+{
+
+	final int WHITE_PAWN = 1;
+	final int WHITE_KING = 2;
+	final int BLANK = 0;
+	final int BLACK_PAWN = -1;
+	final int BLACK_KING = -2;
+
+	// Node class to serve as states
+	private class Node
+	{
+		private Node parent;
+		private Node child1;
+		private Node child2;
+		private Node child3;
+		private Node child4;
+		private int[] board;
+		private boolean isWhite;
+		private int movesRemaining;
+		private int level;
+		// private int alpha;
+		// private int beta;
+
+		public Node()
+		{
+			this.parent = null;
+			this.child1 = null;
+			this.child2 = null;
+			this.child3 = null;
+			this.child4 = null;
+			this.board = new int[33];
+			this.isWhite = false;
+			this.movesRemaining = 100;
+			this.level = 0;
+			// this.alpha = Integer.MIN_VALUE;
+			// this.beta = Integer.MAX_VALUE;
+		}
+
+		public Node(Node parent, int[] board, boolean isWhite,
+				int movesRemaining, int level)
+		{
+			this.parent = parent;
+			this.board = board;
+			this.isWhite = isWhite;
+			this.movesRemaining = movesRemaining;
+			this.level = level;
+			this.child1 = null;
+			this.child2 = null;
+			this.child3 = null;
+			this.child4 = null;
+			// this.alpha = Integer.MIN_VALUE;
+			// this.beta = Integer.MAX_VALUE;
+		}
+
+		public Node getParent()
+		{
+			return parent;
+		}
+
+		public void setParent(Node parent)
+		{
+			this.parent = parent;
+		}
+
+		public Node getChild1()
+		{
+			return child1;
+		}
+
+		public void setChild1(Node child1)
+		{
+			this.child1 = child1;
+		}
+
+		public Node getChild2()
+		{
+			return child2;
+		}
+
+		public void setChild2(Node child2)
+		{
+			this.child2 = child2;
+		}
+
+		public Node getChild3()
+		{
+			return child3;
+		}
+
+		public void setChild3(Node child3)
+		{
+			this.child3 = child3;
+		}
+
+		public Node getChild4()
+		{
+			return child4;
+		}
+
+		public void setChild4(Node child4)
+		{
+			this.child4 = child4;
+		}
+
+		public int[] getBoard()
+		{
+			return board;
+		}
+
+		public void setBoard(int[] board)
+		{
+			this.board = board;
+		}
+
+		public boolean isWhite()
+		{
+			return isWhite;
+		}
+
+		public void setWhite(boolean isWhite)
+		{
+			this.isWhite = isWhite;
+		}
+
+		public int getMovesRemaining()
+		{
+			return movesRemaining;
+		}
+
+		public void setMovesRemaining(int movesRemaining)
+		{
+			this.movesRemaining = movesRemaining;
+		}
+
+		public int getLevel()
+		{
+			return level;
+		}
+
+		public void setLevel(int level)
+		{
+			this.level = level;
+		}
+
+		// public int getAlpha()
+		// {
+		// return this.alpha;
+		// }
+		//
+		// public void setAlpha(int alpha)
+		// {
+		// this.alpha = alpha;
+		// }
+		//
+		// public int getBeta()
+		// {
+		// return this.beta;
+		// }
+		//
+		// public void setBeta(int beta)
+		// {
+		// this.beta = beta;
+		// }
+
+	}
+
+	// Data members for the Agent class which
+	// solves the Rook Maze Problem
+	private Node start; // Starting point
+	// private Coordinate goal; // End point
+	private List<Node> OPEN; // Points to be visited
+	private List<Node> CLOSED; // Points that have already been visited
+	private int[] board; // The Game board
+	private int ply;
+	private int alpha;
+	private int beta;
+
+	// Constructor for the Agent
+	public GalbreathAgentFunction(int[] board, boolean isWhite,
+			int movesRemaining, int level)
+	{
+		this.start = new Node(null, board, isWhite, movesRemaining, 1);
+		this.OPEN = new LinkedList<Node>();
+		this.OPEN.add(0, this.start);
+		this.CLOSED = new LinkedList<Node>();
+		this.board = board;
+		this.ply = 2;
+		this.alpha = Integer.MIN_VALUE;
+		this.beta = Integer.MAX_VALUE;
+	}
+
+	public int getAlpha()
+	{
+		return this.alpha;
+	}
+
+	public void setAlpha(int alpha)
+	{
+		this.alpha = alpha;
+	}
+
+	public int getBeta()
+	{
+		return this.beta;
+	}
+
+	public void setBeta(int beta)
+	{
+		this.beta = beta;
+	}
+
+	// public int[] breadthFirstSearch(Coordinate start, Coordinate goal)
+	// {
+	// String test = "No solution";
+	// //while (test.equals("No solution") && this.ply < 4)
+	// //{
+	// test = breadthFirstSearch(start, goal, this.ply);
+	// // System.out.println(test + " " + this.ply);
+	//// this.OPEN = new LinkedList<Node>();
+	//// this.start = new Node(null, start, 1);
+	//// this.OPEN.add(0, this.start);
+	//// root = null;
+	//// this.CLOSED = new LinkedList<Node>();
+	//// this.ply = this.ply + 1;
+	// //}
+	// this.ply = 2;
+	// return test;
+	// }
+
+	// Method that performs a breadth first search to optimally solve
+	// the Rook Maze problem
+	public int[] breadthFirstSearch(int[] board, boolean isWhite, int movesRemaining, int ply)
+	{
+		// If there are no nodes left to visit then there is no solution
+		if (this.OPEN.size() != 0)
+		{
+			// Getting the first node in our fringe
+			Node x = this.OPEN.remove(0);
+
+			for (int i = 0; i < this.CLOSED.size(); i++)
+			{
+				if (x.level < this.CLOSED.get(i).level)
+				{
+					this.CLOSED.remove(i);
+				}
+			}
+			// Checking to see if our node is the goal point
+//			if (x.getData().getIndex() == goal.getIndex())
+//			{
+//				// If it is then we count all the moves it took to get
+//				// to this state as well as construct the path
+//				int count = 0;
+//				String path = "";
+//				for (Node p = x; p != null; p = p.getParent())
+//				{
+//					// Constructing the path
+//					if (p.getParent() != null)
+//					{
+//						if (p.getParent().getData().getX() > p.getData().getX())
+//						{
+//							path = "U" + path;
+//						}
+//						else if (p.getParent().getData().getX() < p.getData()
+//								.getX())
+//						{
+//							path = "D" + path;
+//						}
+//						else if (p.getParent().getData().getY() > p.getData()
+//								.getY())
+//						{
+//							path = "L" + path;
+//						}
+//						else if (p.getParent().getData().getY() < p.getData()
+//								.getY())
+//						{
+//							path = "R" + path;
+//						}
+//					}
+//					count++;
+//				}
+//				// Must subtract 1 because it counts nodes instead of moves
+//				// between nodes
+//				return "Path: " + path + " Move Count: " + (count - 1);
+//			}
+
+			// If it is not the goal, we add it to the tree in our breadth first
+			// search
+			// System.out.println("Index: " + x.getData().getIndex() + " Level:
+			// " + x.level);
+			addNode(x.getParent(), x);
+
+			// We also add it to our Closed list so we don't visit it twice
+			this.CLOSED.add(x);
+			
+			//CHECKERS MOVE FORWARD LEFT
+			for (int i = 1; i < board.length; i++)
+			{
+				if (isWhite == true)
+				{
+					if (board[i] == WHITE_PAWN || board[i] == WHITE_KING)
+					{
+						if(i != 5 && i != 13 && i != 21 && i != 29 && i > 5)
+						{
+							if(board[i - 5] == BLANK)
+							{
+								int [] newBoard = new int[33];
+								for(int j = 1; j < board.length; j++)
+								{
+									if (j == i - 5)
+									{
+										newBoard[j] = board[i];
+									}
+									else if(j == i)
+									{
+										newBoard[j] = BLANK;
+									}
+									else
+									{
+										newBoard[j] = board[j];
+									}
+								}
+								if (x.level < this.ply)
+								{
+									Node newNode = new Node(x, newBoard, isWhite, movesRemaining, x.level + 1);
+									this.OPEN.add(0, newNode);
+								}
+							}
+							if(board[i - 5] == BLACK_PAWN || board[i - 5] == BLACK_KING)
+							{
+								// 10, 11, 12, 14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32
+								boolean canJump = false;
+								int counter = 1;
+								for (int z = 10; z <= i; z++)
+								{
+									if(z == i && counter != 4)
+									{
+										canJump = true;
+									}
+									if (counter == 4)
+									{
+									    //System.out.println(z);
+									    counter = 0;
+									}
+								    counter = counter + 1;
+								}
+								if (i > 9 && board[i-9] == BLANK && canJump == true)
+								{
+									int [] newBoard = new int [33];
+									for (int j = 1; j < board.length; j++)
+									{
+										if (j == i - 9)
+										{
+											newBoard[j] = WHITE_PAWN;
+										}
+										else if(j == i - 5)
+										{
+											newBoard[j] = BLANK;
+										}
+										else
+										{
+											newBoard[j] = board[j];
+										}
+									}
+									if(x.level <= this.ply)
+									{
+										Node newNode = new Node(x, newBoard, isWhite, movesRemaining, x.level + 1);
+										this.OPEN.add(0, newNode);
+									}
+									if(x.level == this.ply)
+									{
+										this.board = newBoard;
+									}
+
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					if (board[i] == BLACK_PAWN || board[i] == BLACK_KING)
+					{
+						if(i != 4 && i != 12 && i != 20 && i != 28 && i < 28)
+						{
+							if(board[i + 5] == BLANK)
+							{
+								int [] newBoard = new int[33];
+								for(int j = 1; j < board.length; j++)
+								{
+									if (j == i + 5)
+									{
+										newBoard[j] = board[i];
+									}
+									else if(j == i)
+									{
+										newBoard[j] = BLANK;
+									}
+									else
+									{
+										newBoard[j] = board[j];
+									}
+								}
+								if (x.level < this.ply)
+								{
+									Node newNode = new Node(x, newBoard, isWhite, movesRemaining, x.level + 1);
+									this.OPEN.add(0, newNode);
+								}
+							}
+							if(board[i + 5] == WHITE_PAWN || board[i + 5] == WHITE_KING)
+							{
+								// 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17, 18, 19, 21, 22, 23
+								boolean canJump = false;
+								int counter = 1;
+								for (int z = 1; z <= i && z < 24; z++)
+								{
+									if(z == i && counter != 4)
+									{
+										canJump = true;
+									}
+									if (counter == 4)
+									{
+									    //System.out.println(z);
+									    counter = 0;
+									}
+								    counter = counter + 1;
+								}
+								if (i < 24 && board[i+9] == BLANK && canJump == true)
+								{
+									int [] newBoard = new int [33];
+									for (int j = 1; j < board.length; j++)
+									{
+										if (j == i + 9)
+										{
+											newBoard[j] = BLACK_PAWN;
+										}
+										else if(j == i + 5)
+										{
+											newBoard[j] = BLANK;
+										}
+										else
+										{
+											newBoard[j] = board[j];
+										}
+									}
+									if(x.level <= this.ply)
+									{
+										Node newNode = new Node(x, newBoard, isWhite, movesRemaining, x.level + 1);
+										this.OPEN.add(0, newNode);
+									}
+									if(x.level == this.ply)
+									{
+										this.board = newBoard;
+									}
+
+								}
+							}
+						}
+					}
+				}
+			}
+
+//			// Moving down on the game board
+//			// First we make sure we don't move off of the game board
+//			if ((x.getData().getX() + x.getData().getValue()) < grid.length)
+//			{
+//				// Finding the index of our new location
+//				int newIndex = ((x.getData().getX() + x.getData().getValue())
+//						* grid.length) + x.getData().getY();
+//
+//				// Making sure the new location has not already been visited
+//				// or is already in our fringe
+//				boolean found = false;
+//				boolean found1 = false;
+//				for (int i = 0; i < this.CLOSED.size(); i++)
+//				{
+//					if (this.CLOSED.get(i).getData().getIndex() == newIndex)
+//					{
+//						found = true;
+//					}
+//				}
+//				for (int i = 0; i < this.OPEN.size(); i++)
+//				{
+//					if (this.OPEN.get(i).getData().getIndex() == newIndex)
+//					{
+//						found1 = true;
+//					}
+//				}
+//
+//				// Adding the new location to our fringe
+//				if (found == false && found1 == false)
+//				{
+//					Coordinate newCoord = new Coordinate(
+//							(x.getData().getX() + x.getData().getValue()),
+//							x.getData().getY(),
+//							grid[(x.getData().getX()
+//									+ x.getData().getValue())][x.getData()
+//											.getY()],
+//							newIndex);
+//
+//					if (x.level < ply)
+//					{
+//						// System.out.println("Test");
+//						Node newNode = new Node(x, newCoord, x.level + 1);
+//						this.OPEN.add(0, newNode);
+//					}
+//				}
+//			}
+
+//			// Moving up on the game board
+//			// First we make sure we don't move off of the game board
+//			if ((x.getData().getX() - x.getData().getValue()) >= 0)
+//			{
+//				// Finding the index of our new location
+//				int newIndex = ((x.getData().getX() - x.getData().getValue())
+//						* grid.length) + x.getData().getY();
+//
+//				// Making sure the new location has not already been visited
+//				// or is already in our fringe
+//				boolean found = false;
+//				boolean found1 = false;
+//				for (int i = 0; i < this.CLOSED.size(); i++)
+//				{
+//					if (this.CLOSED.get(i).getData().getIndex() == newIndex)
+//					{
+//						found = true;
+//					}
+//				}
+//				for (int i = 0; i < this.OPEN.size(); i++)
+//				{
+//					if (this.OPEN.get(i).getData().getIndex() == newIndex)
+//					{
+//						found1 = true;
+//					}
+//				}
+//
+//				// Adding the new location to our fringe
+//				if (found == false && found1 == false)
+//				{
+//					Coordinate newCoord = new Coordinate(
+//							(x.getData().getX() - x.getData().getValue()),
+//							x.getData().getY(),
+//							grid[(x.getData().getX()
+//									- x.getData().getValue())][x.getData()
+//											.getY()],
+//							newIndex);
+//
+//					if (x.level < ply)
+//					{
+//						// System.out.println("Test");
+//						Node newNode = new Node(x, newCoord, x.level + 1);
+//						this.OPEN.add(0, newNode);
+//					}
+//				}
+//			}
+
+//			// Moving left on the game board
+//			// First we make sure we don't move off of the game board
+//			if ((x.getData().getY() - x.getData().getValue()) >= 0)
+//			{
+//				// Finding the index of our new location
+//				int newIndex = (x.getData().getX() * grid.length)
+//						+ (x.getData().getY() - x.getData().getValue());
+//
+//				// Making sure the new location has not already been visited
+//				// or is already in our fringe
+//				boolean found = false;
+//				boolean found1 = false;
+//				for (int i = 0; i < this.CLOSED.size(); i++)
+//				{
+//					if (this.CLOSED.get(i).getData().getIndex() == newIndex)
+//					{
+//						found = true;
+//					}
+//				}
+//				for (int i = 0; i < this.OPEN.size(); i++)
+//				{
+//					if (this.OPEN.get(i).getData().getIndex() == newIndex)
+//					{
+//						found1 = true;
+//					}
+//				}
+//
+//				// Adding the new location to our fringe
+//				if (found == false && found1 == false)
+//				{
+//					Coordinate newCoord = new Coordinate(x.getData().getX(),
+//							(x.getData().getY() - x.getData().getValue()),
+//							grid[x.getData().getX()][(x.getData().getY()
+//									- x.getData().getValue())],
+//							newIndex);
+//
+//					if (x.level < ply)
+//					{
+//						// System.out.println("Test");
+//						Node newNode = new Node(x, newCoord, x.level + 1);
+//						this.OPEN.add(0, newNode);
+//					}
+//				}
+//			}
+
+//			// Moving right on the game board
+//			// First we make sure we don't move off of the game board
+//			if ((x.getData().getY() + x.getData().getValue()) < grid[0].length)
+//			{
+//				// Finding the index of our new location
+//				int newIndex = ((x.getData().getX()) * grid.length)
+//						+ (x.getData().getY() + x.getData().getValue());
+//
+//				// Making sure the new location has not already been visited
+//				// or is already in our fringe
+//				boolean found = false;
+//				boolean found1 = false;
+//				for (int i = 0; i < this.CLOSED.size(); i++)
+//				{
+//					if (this.CLOSED.get(i).getData().getIndex() == newIndex)
+//					{
+//						found = true;
+//					}
+//				}
+//				for (int i = 0; i < this.OPEN.size(); i++)
+//				{
+//					if (this.OPEN.get(i).getData().getIndex() == newIndex)
+//					{
+//						found1 = true;
+//					}
+//				}
+//
+//				// Adding the new location to our fringe
+//				if (found == false && found1 == false)
+//				{
+//					Coordinate newCoord = new Coordinate(x.getData().getX(),
+//							(x.getData().getY() + x.getData().getValue()),
+//							grid[x.getData().getX()][(x.getData().getY()
+//									+ x.getData().getValue())],
+//							newIndex);
+//					if (x.level < ply)
+//					{
+//						// System.out.println("Test");
+//						Node newNode = new Node(x, newCoord, x.level + 1);
+//						this.OPEN.add(0, newNode);
+//					}
+//				}
+//			}
+
+			// for (int i = 0; i < this.OPEN.size(); i++)
+			// {
+			// System.out.print(this.OPEN.get(i).getData().getIndex() + " ");
+			// }
+			// System.out.println();
+
+			// Moving on to the next node
+			return breadthFirstSearch(board, !isWhite, movesRemaining, ply);
+		}
+
+		// If there are no more states in the OPEN list (fringe)
+		// there is No solution
+		int [] test = {9, 14};
+		return test;
+	}
+
+	// The root of the tree used in our breadth first search
+	public Node root;
+
+	// Function to add a node to our tree
+	// A node can have a maximum of four children, for
+	// the four directions that can be traveled
+	public void addNode(Node parent, Node newNode)
+	{
+		// The tree is empty
+		if (root == null)
+		{
+			root = newNode;
+		}
+		// Parent node has no children
+		else if (parent.getChild1() == null)
+		{
+			parent.setChild1(newNode);
+		}
+		// Parent node has one child
+		else if (parent.getChild2() == null)
+		{
+			parent.setChild2(newNode);
+		}
+		// Parent node has two children
+		else if (parent.getChild3() == null)
+		{
+			parent.setChild3(newNode);
+		}
+		// Parent node has 3 children
+		else if (parent.getChild4() == null)
+		{
+			parent.setChild4(newNode);
+		}
+	}
+
+	public int eval(int alpha, int beta, Node current)
+	{
+		return -1;
+	}
+
+}

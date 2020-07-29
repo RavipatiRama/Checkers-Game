@@ -1,0 +1,1009 @@
+package gal;
+/*
+ * Joseph T. Galbreath III 
+ * E01155874 
+ * COSC 561 
+ * Rook Maze Problem
+ */
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
+public class GalbreathAgentFunction
+{
+
+	final int WHITE_PAWN = 1;
+	final int WHITE_KING = 2;
+	final int BLANK = 0;
+	final int BLACK_PAWN = -1;
+	final int BLACK_KING = -2;
+
+	// Node class to serve as states
+	private class Node
+	{
+		private Node parent;
+		private LinkedList<Node> children;
+		private int[] board;
+		private boolean isWhite;
+		private int movesRemaining;
+		private int level;
+		private int move[];
+		private boolean capturePossible;
+
+		public Node()
+		{
+			this.parent = null;
+			this.board = new int[33];
+			this.isWhite = false;
+			this.movesRemaining = 100;
+			this.level = 0;
+			this.move = new int[2];
+			this.capturePossible = false;
+			this.children = new LinkedList<Node>();
+		}
+
+		public Node(Node parent, int[] board, boolean isWhite,
+				int movesRemaining, int level)
+		{
+			this.parent = parent;
+			this.board = board;
+			this.isWhite = isWhite;
+			this.movesRemaining = movesRemaining;
+			this.level = level;
+			this.children = new LinkedList<Node>();
+			this.move = new int[2];
+			this.capturePossible = false;
+			// this.alpha = Integer.MIN_VALUE;
+			// this.beta = Integer.MAX_VALUE;
+		}
+
+		public Node getParent()
+		{
+			return parent;
+		}
+
+		public void setParent(Node parent)
+		{
+			this.parent = parent;
+		}
+
+		public int[] getBoard()
+		{
+			return board;
+		}
+
+		public void setBoard(int[] board)
+		{
+			this.board = board;
+		}
+
+		public boolean isWhite()
+		{
+			return isWhite;
+		}
+
+		public void setWhite(boolean isWhite)
+		{
+			this.isWhite = isWhite;
+		}
+
+		public int getMovesRemaining()
+		{
+			return movesRemaining;
+		}
+
+		public void setMovesRemaining(int movesRemaining)
+		{
+			this.movesRemaining = movesRemaining;
+		}
+
+		public int getLevel()
+		{
+			return level;
+		}
+
+		public void setLevel(int level)
+		{
+			this.level = level;
+		}
+
+	}
+
+	// Data members for the Agent class which
+	// solves the Rook Maze Problem
+	private Node start; // Starting point
+	// private Coordinate goal; // End point
+	private List<Node> OPEN; // Points to be visited
+	private List<Node> CLOSED; // Points that have already been visited
+	private List<Node> KEEP;
+	private int[] board; // The Game board
+	private int ply;
+	private int alpha;
+	private int beta;
+	private Node best;
+	private boolean isWhite;
+
+	// Constructor for the Agent
+	public GalbreathAgentFunction(int[] board, boolean isWhite,
+			int movesRemaining, int level)
+	{
+		this.start = new Node(null, board, isWhite, movesRemaining, 1);
+		this.OPEN = new LinkedList<Node>();
+		this.OPEN.add(0, this.start);
+		this.CLOSED = new LinkedList<Node>();
+		this.KEEP = new LinkedList<Node>();
+		this.board = board;
+		this.ply = 4;
+		this.alpha = Integer.MIN_VALUE;
+		this.beta = Integer.MAX_VALUE;
+		this.best = new Node(null, board, isWhite, movesRemaining, 1);
+		this.isWhite = isWhite;
+
+	}
+
+	public int getAlpha()
+	{
+		return this.alpha;
+	}
+
+	public void setAlpha(int alpha)
+	{
+		this.alpha = alpha;
+	}
+
+	public int getBeta()
+	{
+		return this.beta;
+	}
+
+	public void setBeta(int beta)
+	{
+		this.beta = beta;
+	}
+
+	// Method that performs a breadth first search to optimally solve
+	// the Rook Maze problem
+
+	/*
+	 * Have breadth first search set up the OPEN list and call a method that
+	 * searches
+	 * 
+	 */
+
+	public int[] moveSelection(int[] board, boolean isWhite, int movesRemaining,
+			int level)
+	{
+		root = null;
+		int bestVal = breadthFirstSearch(board, isWhite, movesRemaining, 1,
+				alpha, beta, best);
+
+		return this.best.move;
+	}
+
+	// Maybe replace int[] board with a node
+	public int breadthFirstSearch(int[] board, boolean isWhite,
+			int movesRemaining, int ply, int alpha, int beta, Node best)
+	{
+		System.out.println("THIS IS A TEST!");
+		// If there are no nodes left to visit then there is no solution
+		if (this.OPEN.size() != 0)
+		{
+			System.out.println("THIS IS ANOTHER TEST");
+			System.out.println("Alpha: " + alpha);
+			System.out.println("Beta: " + beta);
+			// Getting the first node in our fringe
+			Node x = this.OPEN.get(0);
+
+			for (int i = 0; i < this.CLOSED.size(); i++)
+			{
+				if (x.level < this.CLOSED.get(i).level)
+				{
+					this.CLOSED.remove(i);
+				}
+			}
+
+			addNode(x.getParent(), x);
+
+			System.out.println(x.getParent());
+
+			// We also add it to our Closed list so we don't visit it twice
+			this.CLOSED.add(x);
+			if (x.parent == start)
+			{
+				this.KEEP.add(x);
+			}
+
+			if (ply >= this.ply)
+			{
+				System.out.println("Eval: " + evaluateState(isWhite, board));
+				return evaluateState(isWhite, board);
+			}
+
+			// This is where the move stuff used to be
+			List<Node> temp = reachableBoards(x);
+			//this.OPEN.addAll(reachableBoards(x));
+			for (int i = 0; i < temp.size(); i++)
+			{
+				this.OPEN.add(0, temp.get(i));
+			}
+			System.out.println("Num of Boards: " + this.OPEN.size());
+			for (int i = 0; i < this.OPEN.size(); i++)
+			{
+				System.out.println("Board: " + i);
+			}
+			this.best.board = this.OPEN.get(0).board;
+			this.best.move = this.OPEN.get(0).move;
+
+			for (int i = 0; i < this.OPEN.size(); i++)
+			{
+				int val = breadthFirstSearch(this.OPEN.get(i).board, !isWhite,
+						movesRemaining, ply + 1, alpha, beta, this.best);
+				if (isWhite == this.isWhite)
+				{
+					System.out.println("IsWhite " + this.isWhite + " " + isWhite);
+					if (val > alpha)
+					{
+						alpha = val;
+						this.best.board = board;
+						this.best.move = this.OPEN.get(i).move;
+					}
+					if (alpha >= beta)
+					{
+						return alpha;
+					}
+				}
+				else
+				{
+					System.out.println("IsBlack " + this.isWhite + " " + isWhite);
+					if (val < beta)
+					{
+						beta = val;
+						this.best.board = board;
+						this.best.move = this.OPEN.get(i).move;
+					}
+					if (alpha >= beta)
+					{
+						return beta;
+					}
+				}
+			}
+
+			// Moving on to the next node
+			return (isWhite == this.isWhite ? alpha : beta);
+		}
+		this.OPEN.remove(0);
+		return -10;
+
+		// If there are no more states in the OPEN list (fringe)
+		// there is No solution
+
+		// for (int n = 0; n < start.children.size(); n++)
+		// {
+		// if (start.children.get(n).capturePossible == true)
+		// {
+		// int[] test = start.children.get(n).move;
+		// return test;
+		// }
+		// }
+		//
+		// int[] test = start.children.get(0).move;
+		// return test;
+
+	}
+
+	// The root of the tree used in our breadth first search
+	public Node root;
+
+	// Function to add a node to our tree
+	// A node can have a maximum of four children, for
+	// the four directions that can be traveled
+	public void addNode(Node parent, Node newNode)
+	{
+		// The tree is empty
+		if (root == null || parent == null)
+		{
+			root = newNode;
+		}
+		else
+		{
+			parent.children.add(newNode);
+		}
+		// // Parent node has no children
+		// else if (parent.getChild1() == null)
+		// {
+		// parent.setChild1(newNode);
+		// }
+		// // Parent node has one child
+		// else if (parent.getChild2() == null)
+		// {
+		// parent.setChild2(newNode);
+		// }
+		// // Parent node has two children
+		// else if (parent.getChild3() == null)
+		// {
+		// parent.setChild3(newNode);
+		// }
+		// // Parent node has 3 children
+		// else if (parent.getChild4() == null)
+		// {
+		// parent.setChild4(newNode);
+		// }
+	}
+
+	public int eval(int alpha, int beta, Node current)
+	{
+		return (int) Math.random() * 10;
+	}
+
+	//Evaluate board state
+    public static int evaluateState(boolean isWhite, int[] inputBoard)
+    {
+        int[][] boardState = InitBoard(inputBoard);
+        
+        int stateValue=0;
+        
+        int blackPieces = 0;
+        int whitePieces = 0;
+        
+        //Count number of each color
+        //pieces are worth 2, pieces in enemy territory worth 3
+        for(int i =1; i<inputBoard.length; i++) 
+        {
+            if(inputBoard[i]==1)
+            {
+                whitePieces++;
+                stateValue+=2;
+                if(i<=12)
+                    stateValue++;
+            }
+            if(inputBoard[i]==-1)
+            {
+                blackPieces++;
+                stateValue-=2;
+                if(i>=21)
+                    stateValue--;
+            }
+        }
+        stateValue+= CapturePotential(boardState);
+        stateValue-= inDanger(boardState);
+        
+        //No black pieces == WIN :)
+        if(blackPieces == 0)
+            stateValue = 1000000;
+        //No white pieces == LOSS :(
+        if(whitePieces == 0)
+            stateValue = -1000000;
+        
+        
+        return stateValue;
+    }
+    
+    public static int CapturePotential(int[][]boardState)
+    {
+        int canCapture=0;
+        
+        int row = 1;
+        int col=4;
+        for(int i=9;i<33;i++)
+        {
+            if(boardState[row][col]==1)
+            {    
+                if(boardState[row][col]!=12)
+                {
+                    if(boardState[row-1][col]==-1 && boardState[row-2][col]==0)
+                        canCapture+=4;
+                }
+                    
+                if(boardState[row][col]!=9 && boardState[row][col]!=13)
+                {
+                    if(boardState[row][col-1]==-1 && boardState[row][col-2]==0)
+                        canCapture+=4;
+                }
+            }
+            
+            if(i%4==0)
+            {
+                switch(i) {
+                case 4: row = 0;
+                        col = 4;
+                        break;
+                case 8: row = 1;
+                        col = 4;
+                        break;
+                case 12: row = 1;
+                        col = 5;
+                        break;
+                case 16: row =2;
+                         col=5;
+                         break;
+                case 20: row=2;
+                         col=6;
+                         break;
+                case 24: row=3;
+                         col=6;
+                         break;
+                case 28: row=3;
+                         col=7;
+                         break;                
+                }
+            }
+            else
+            {
+                row++;
+                col--;
+            }
+        }
+        
+        return canCapture;
+    }
+    
+    public static int inDanger(int[][] boardState)
+    {
+        int inDanger = 0;
+        
+        int row = 1;
+        int col=3;
+        for(int i=6;i<28;i++)
+        {
+            if(boardState[row][col]==1)
+            {    
+                    if(boardState[row+1][col]==-1 && boardState[row-1][col]==0)
+                        inDanger+=4;
+                
+                
+                    if(boardState[row][col+1]==-1 && boardState[row][col-1]==0)
+                        inDanger+=4;
+            }
+            
+            if(i%4==0)
+            {
+                switch(i) {
+                case 4: row = 0;
+                        col = 4;
+                        break;
+                case 8: row = 1;
+                        col = 4;
+                        break;
+                case 12: row = 1;
+                        col = 5;
+                        break;
+                case 16: row =2;
+                         col=5;
+                         break;
+                case 20: row=2;
+                         col=6;
+                         break;
+                case 24: row=3;
+                         col=6;
+                         break;
+                case 28: row=3;
+                         col=7;
+                         break;                
+                }
+            }
+            else
+            {
+                row++;
+                col--;
+            }
+        }
+        
+        return inDanger;
+    }
+    
+    
+    //initialize tilted board
+    public static int[][] InitBoard(int[]inputBoard)
+    {
+        int[][]boardState=new int[7][8];
+        
+        //initialize board to empty many indeces of array will remain empty
+        for(int row=0;row<boardState.length;row++)
+        {
+            for(int col=0;col<boardState[row].length;col++)
+                boardState[row][col]=6;
+        }
+        
+        int row = 0;
+        int col=3;
+        for(int i=1;i<33;i++)
+        {
+            boardState[row][col]=inputBoard[i];
+            
+            if(i%4==0)
+            {
+                switch(i) {
+                case 4: row = 0;
+                        col = 4;
+                        break;
+                case 8: row = 1;
+                        col = 4;
+                        break;
+                case 12: row = 1;
+                        col = 5;
+                        break;
+                case 16: row =2;
+                         col=5;
+                         break;
+                case 20: row=2;
+                         col=6;
+                         break;
+                case 24: row=3;
+                         col=6;
+                         break;
+                case 28: row=3;
+                         col=7;
+                         break;                
+                }
+            }
+            else
+            {
+                row++;
+                col--;
+            }
+        }
+        
+        
+        return boardState;
+    }
+
+
+
+	
+	public LinkedList<Node> reachableBoards(Node n)
+	{
+		LinkedList<Node> possibleMoves = new LinkedList<Node>();
+		int moveCounter = 1;
+		int jumpSize = 4;
+		// CHECKERS MOVE FORWARD LEFT
+		for (int i = 1; i < board.length; i++)
+		{
+			if (n.isWhite == true)
+			{
+				if (moveCounter <= 4)
+				{
+					jumpSize = 4;
+				}
+				else
+				{
+					jumpSize = 5;
+				}
+				if (board[i] == WHITE_PAWN || board[i] == WHITE_KING)
+				{
+					if (i != 5 && i != 13 && i != 21 && i != 29 && i > 5)
+					{
+						if (board[i - jumpSize] == BLANK)
+						{
+							int[] newBoard = new int[33];
+							for (int j = 1; j < board.length; j++)
+							{
+								if (j == i - jumpSize)
+								{
+									newBoard[j] = board[i];
+								}
+								else if (j == i)
+								{
+									newBoard[j] = BLANK;
+								}
+								else
+								{
+									newBoard[j] = board[j];
+								}
+							}
+							if (n.level <= this.ply)
+							{
+								Node newNode = new Node(n, newBoard, !n.isWhite,
+										n.movesRemaining - 1, n.level + 1);
+								newNode.move[0] = i;
+								newNode.move[1] = i - jumpSize;
+								possibleMoves.add(0, newNode);
+							}
+						}
+						if (board[i - jumpSize] == BLACK_PAWN
+								|| board[i - jumpSize] == BLACK_KING)
+						{
+							// 10, 11, 12, 14, 15, 16, 18, 19, 20, 22, 23,
+							// 24, 26, 27, 28, 30, 31, 32
+							boolean canJump = false;
+							int counter = 1;
+							for (int z = 10; z <= i; z++)
+							{
+								if (z == i && counter != 4)
+								{
+									canJump = true;
+								}
+								if (counter == 4)
+								{
+									// System.out.println(z);
+									counter = 0;
+								}
+								counter = counter + 1;
+							}
+							if (i > 9 && board[i - 9] == BLANK
+									&& canJump == true)
+							{
+								int[] newBoard = new int[33];
+								for (int j = 1; j < board.length; j++)
+								{
+									if (j == i - 9)
+									{
+										newBoard[j] = WHITE_PAWN;
+									}
+									else if (j == i - jumpSize)
+									{
+										newBoard[j] = BLANK;
+									}
+									else
+									{
+										newBoard[j] = board[j];
+									}
+								}
+								if (n.level <= this.ply)
+								{
+									Node newNode = new Node(n, newBoard,
+											!n.isWhite, n.movesRemaining - 1,
+											n.level + 1);
+									newNode.move[0] = i;
+									newNode.move[1] = i - 9;
+									newNode.capturePossible = true;
+									possibleMoves.add(0, newNode);
+								}
+								// if (n.level == this.ply)
+								// {
+								// this.board = newBoard;
+								// }
+
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				if (moveCounter <= 4)
+				{
+					jumpSize = 5;
+				}
+				else
+				{
+					jumpSize = 4;
+				}
+				if (board[i] == BLACK_PAWN || board[i] == BLACK_KING)
+				{
+					if (i != 4 && i != 12 && i != 20 && i != 28 && i < 28)
+					{
+						if (board[i + jumpSize] == BLANK)
+						{
+							int[] newBoard = new int[33];
+							for (int j = 1; j < board.length; j++)
+							{
+								if (j == i + jumpSize)
+								{
+									newBoard[j] = board[i];
+								}
+								else if (j == i)
+								{
+									newBoard[j] = BLANK;
+								}
+								else
+								{
+									newBoard[j] = board[j];
+								}
+							}
+							if (n.level <= this.ply)
+							{
+								Node newNode = new Node(n, newBoard, !n.isWhite,
+										n.movesRemaining - 1, n.level + 1);
+								newNode.move[0] = i;
+								newNode.move[1] = i + jumpSize;
+								possibleMoves.add(0, newNode);
+							}
+						}
+						if (board[i + jumpSize] == WHITE_PAWN
+								|| board[i + jumpSize] == WHITE_KING)
+						{
+							// 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15, 17,
+							// 18, 19, 21, 22, 23
+							boolean canJump = false;
+							int counter = 1;
+							for (int z = 1; z <= i && z < 24; z++)
+							{
+								if (z == i && counter != 4)
+								{
+									canJump = true;
+								}
+								if (counter == 4)
+								{
+									// System.out.println(z);
+									counter = 0;
+								}
+								counter = counter + 1;
+							}
+							if (i < 24 && board[i + 9] == BLANK
+									&& canJump == true)
+							{
+								int[] newBoard = new int[33];
+								for (int j = 1; j < board.length; j++)
+								{
+									if (j == i + 9)
+									{
+										newBoard[j] = BLACK_PAWN;
+									}
+									else if (j == i + jumpSize)
+									{
+										newBoard[j] = BLANK;
+									}
+									else
+									{
+										newBoard[j] = board[j];
+									}
+								}
+								if (n.level <= this.ply)
+								{
+									Node newNode = new Node(n, newBoard,
+											!n.isWhite, n.movesRemaining - 1,
+											n.level + 1);
+									newNode.move[0] = i;
+									newNode.move[1] = i + 9;
+									newNode.capturePossible = true;
+									possibleMoves.add(0, newNode);
+								}
+								// if (n.level == this.ply)
+								// {
+								// this.board = newBoard;
+								// }
+
+							}
+						}
+					}
+				}
+			}
+			moveCounter++;
+			if (moveCounter > 8)
+			{
+				moveCounter = 1;
+			}
+		}
+
+		moveCounter = 1;
+		jumpSize = 4;
+		// CHECKERS MOVE FORWARD Right
+		for (int i = 1; i < board.length; i++)
+		{
+			if (n.isWhite == true)
+			{
+				if (moveCounter <= 4)
+				{
+					jumpSize = 3;
+				}
+				else
+				{
+					jumpSize = 4;
+				}
+				if (board[i] == WHITE_PAWN || board[i] == WHITE_KING)
+				{
+					if (i != 4 && i != 12 && i != 20 && i != 28 && i > 5)
+					{
+						if (board[i - jumpSize] == BLANK)
+						{
+							int[] newBoard = new int[33];
+							for (int j = 1; j < board.length; j++)
+							{
+								if (j == i - jumpSize)
+								{
+									newBoard[j] = board[i];
+								}
+								else if (j == i)
+								{
+									newBoard[j] = BLANK;
+								}
+								else
+								{
+									newBoard[j] = board[j];
+								}
+							}
+							if (n.level <= this.ply)
+							{
+								Node newNode = new Node(n, newBoard, !n.isWhite,
+										n.movesRemaining - 1, n.level + 1);
+								newNode.move[0] = i;
+								newNode.move[1] = i - jumpSize;
+								possibleMoves.add(0, newNode);
+							}
+						}
+						if (board[i - jumpSize] == BLACK_PAWN
+								|| board[i - jumpSize] == BLACK_KING)
+						{
+							// 9, 10, 11, 13, 14, 15, 17, 18, 19, 21, 22, 23,
+							// 25, 26, 27, 29, 30, 31
+							boolean canJump = false;
+							int counter = 1;
+							for (int z = 9; z <= i && i < 32; z++)
+							{
+								if (z == i && counter != 4)
+								{
+									canJump = true;
+								}
+								if (counter == 4)
+								{
+									// System.out.println(z);
+									counter = 0;
+								}
+								counter = counter + 1;
+							}
+							if (i > 7 && board[i - 7] == BLANK
+									&& canJump == true)
+							{
+								int[] newBoard = new int[33];
+								for (int j = 1; j < board.length; j++)
+								{
+									if (j == i - 7)
+									{
+										newBoard[j] = WHITE_PAWN;
+									}
+									else if (j == i - jumpSize)
+									{
+										newBoard[j] = BLANK;
+									}
+									else
+									{
+										newBoard[j] = board[j];
+									}
+								}
+								if (n.level <= this.ply)
+								{
+									Node newNode = new Node(n, newBoard,
+											!n.isWhite, n.movesRemaining - 1,
+											n.level + 1);
+									newNode.move[0] = i;
+									newNode.move[1] = i - 7;
+									newNode.capturePossible = true;
+									possibleMoves.add(0, newNode);
+								}
+								// if (n.level == this.ply)
+								// {
+								// this.board = newBoard;
+								// }
+
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				if (moveCounter <= 4)
+				{
+					jumpSize = 4;
+				}
+				else
+				{
+					jumpSize = 3;
+				}
+				if (board[i] == BLACK_PAWN || board[i] == BLACK_KING)
+				{
+					if (i != 5 && i != 13 && i != 21 && i != 29 && i < 29)
+					{
+						if (board[i + jumpSize] == BLANK)
+						{
+							int[] newBoard = new int[33];
+							for (int j = 1; j < board.length; j++)
+							{
+								if (j == i + jumpSize)
+								{
+									newBoard[j] = board[i];
+								}
+								else if (j == i)
+								{
+									newBoard[j] = BLANK;
+								}
+								else
+								{
+									newBoard[j] = board[j];
+								}
+							}
+							if (n.level <= this.ply)
+							{
+								Node newNode = new Node(n, newBoard, !n.isWhite,
+										n.movesRemaining - 1, n.level + 1);
+								newNode.move[0] = i;
+								newNode.move[1] = i + jumpSize;
+								possibleMoves.add(0, newNode);
+							}
+						}
+						if (board[i + jumpSize] == WHITE_PAWN
+								|| board[i + jumpSize] == WHITE_KING)
+						{
+							// 2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15, 16, 18, 19,
+							// 20, 22, 23, 24
+							boolean canJump = false;
+							int counter = 1;
+							for (int z = 2; z <= i && z < 25; z++)
+							{
+								if (z == i && counter != 4)
+								{
+									canJump = true;
+								}
+								if (counter == 4)
+								{
+									// System.out.println(z);
+									counter = 0;
+								}
+								counter = counter + 1;
+							}
+							if (i < 25 && board[i + 7] == BLANK
+									&& canJump == true)
+							{
+								int[] newBoard = new int[33];
+								for (int j = 1; j < board.length; j++)
+								{
+									if (j == i + 7)
+									{
+										newBoard[j] = BLACK_PAWN;
+									}
+									else if (j == i + jumpSize)
+									{
+										newBoard[j] = BLANK;
+									}
+									else
+									{
+										newBoard[j] = board[j];
+									}
+								}
+								if (n.level <= this.ply)
+								{
+									Node newNode = new Node(n, newBoard,
+											!n.isWhite, n.movesRemaining - 1,
+											n.level + 1);
+									newNode.move[0] = i;
+									newNode.move[1] = i + 7;
+									newNode.capturePossible = true;
+									possibleMoves.add(0, newNode);
+								}
+								// if (n.level == this.ply)
+								// {
+								// this.board = newBoard;
+								// }
+
+							}
+						}
+					}
+				}
+			}
+			moveCounter++;
+			if (moveCounter > 8)
+			{
+				moveCounter = 1;
+			}
+		}
+		boolean hasCapture = false;
+		for (int i = 0; i < possibleMoves.size(); i++)
+		{
+			System.out.println(i + " " +possibleMoves.get(i).capturePossible);
+			if (possibleMoves.get(i).capturePossible == true)
+			{
+				hasCapture = true;
+			}
+		}
+		System.out.println(hasCapture);
+		if (hasCapture == true)
+		{
+			for (int i = 0; i < possibleMoves.size(); i++)
+			{
+				if (possibleMoves.get(i).capturePossible == false)
+				{
+					possibleMoves.remove(i);
+					i = i - 1;
+				}
+			}
+		}
+		for (int i = 0; i<possibleMoves.size(); i++)
+		{
+			System.out.println("Move: " + possibleMoves.get(i).move[0] + " " + possibleMoves.get(i).move[1]);
+			System.out.println("Capture Possible: " + possibleMoves.get(i).capturePossible);
+		}
+		return possibleMoves;
+	}
+
+}

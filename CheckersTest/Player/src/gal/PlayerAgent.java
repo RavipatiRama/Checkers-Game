@@ -1,0 +1,77 @@
+package gal;
+
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.*;
+import java.util.StringTokenizer;
+import java.util.ArrayList;
+import java.rmi.*;
+import java.net.*;
+
+//import referee.HumanPlayer;
+
+public class PlayerAgent extends java.rmi.server.UnicastRemoteObject
+		implements referee.Player
+{
+	private String name;
+
+	protected PlayerAgent(String name) throws RemoteException
+	{
+		this.name = name;
+	}
+
+	@Override
+	public int[] getMove(int[] board, boolean isWhite, int movesRemaining)
+			throws RemoteException
+	{
+		AgentFunction x =
+				new AgentFunction(board, isWhite, movesRemaining, 2);
+		// TODO Auto-generated method stub
+		return x.moveSelection(board, isWhite, movesRemaining, 1);
+	}
+
+	@Override
+	public String getName() throws RemoteException
+	{
+		// TODO Auto-generated method stub
+		return name;
+	}
+
+	public static void main(String[] args)
+	{
+		if (args.length != 2 || (!args[0].equals("1") && !args[0].equals("2")))
+		{
+			System.err.println(
+					"Usage: java HumanPlayer X FOO, where X is 1 for registering the agent as 'first',\n"
+							+ "  2 for registering it as 'second'.  The second argument (FOO)is the name of the agent.\n");
+			System.exit(-1);
+		}
+
+		String playerName = args[1];
+		String playerRegistration = (args[0].equals("1") ? "first" : "second");
+
+		System.setSecurityManager(new RMISecurityManager());
+
+		try
+		{
+			PlayerAgent p = new PlayerAgent(playerName);
+			Naming.rebind(playerRegistration, p);
+			System.out.println("Player " + playerRegistration + "(named "
+					+ playerName + ") is waiting for the referee");
+		}
+		catch (MalformedURLException ex)
+		{
+			System.err.println("Bad URL for RMI server");
+			System.err.println(ex);
+		}
+		catch (RemoteException ex)
+		{
+			System.err.println(ex);
+		}
+	}
+
+}

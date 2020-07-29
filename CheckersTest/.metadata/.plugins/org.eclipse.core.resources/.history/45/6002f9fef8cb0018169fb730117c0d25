@@ -1,0 +1,481 @@
+	/*
+	 * Joseph T. Galbreath III 
+	 * E01155874 
+	 * COSC 561 
+	 * Rook Maze Problem
+	 */
+
+import java.util.LinkedList;
+import java.util.List;
+
+public class GalbreathAgentFunction
+{
+
+
+
+//	// Node class to serve as states
+//	private class Node
+//	{
+//		private Node parent;
+//		private Node child1;
+//		private Node child2;
+//		private Node child3;
+//		private Node child4;
+//		private int[] board;
+//		private boolean isWhite;
+//		private int movesRemaining;
+//		private int level;
+//		
+//		public Node()
+//		{
+//			this.parent = null;
+//			this.child1 = null;
+//			this.child2 = null;
+//			this.child3 = null;
+//			this.child4 = null;
+//			this.board = new int[33];
+//			this.isWhite = false;
+//			this.movesRemaining = 100;
+//			this.level = 0;
+//		}
+//
+//		public Node(Node parent, int[] board, boolean isWhite,
+//				int movesRemaining, int level)
+//		{
+//			this.parent = parent;
+//			this.board = board;
+//			this.isWhite = isWhite;
+//			this.movesRemaining = movesRemaining;
+//			this.level = level;
+//		}
+//
+//		public Node getParent()
+//		{
+//			return parent;
+//		}
+//
+//		public void setParent(Node parent)
+//		{
+//			this.parent = parent;
+//		}
+//
+//		public Node getChild1()
+//		{
+//			return child1;
+//		}
+//
+//		public void setChild1(Node child1)
+//		{
+//			this.child1 = child1;
+//		}
+//
+//		public Node getChild2()
+//		{
+//			return child2;
+//		}
+//
+//		public void setChild2(Node child2)
+//		{
+//			this.child2 = child2;
+//		}
+//
+//		public Node getChild3()
+//		{
+//			return child3;
+//		}
+//
+//		public void setChild3(Node child3)
+//		{
+//			this.child3 = child3;
+//		}
+//
+//		public Node getChild4()
+//		{
+//			return child4;
+//		}
+//
+//		public void setChild4(Node child4)
+//		{
+//			this.child4 = child4;
+//		}
+//
+//		public int[] getBoard()
+//		{
+//			return board;
+//		}
+//
+//		public void setBoard(int[] board)
+//		{
+//			this.board = board;
+//		}
+//
+//		public boolean isWhite()
+//		{
+//			return isWhite;
+//		}
+//
+//		public void setWhite(boolean isWhite)
+//		{
+//			this.isWhite = isWhite;
+//		}
+//
+//		public int getMovesRemaining()
+//		{
+//			return movesRemaining;
+//		}
+//
+//		public void setMovesRemaining(int movesRemaining)
+//		{
+//			this.movesRemaining = movesRemaining;
+//		}
+//
+//		public int getLevel()
+//		{
+//			return level;
+//		}
+//
+//		public void setLevel(int level)
+//		{
+//			this.level = level;
+//		}
+//
+//	}
+//
+//	// Data members for the Agent class which
+//	// solves the Rook Maze Problem
+//	private Node start; // Starting point
+//	private Coordinate goal; // End point
+//	private List<Node> OPEN; // Points to be visited
+//	private List<Node> CLOSED; // Points that have already been visited
+//	private int[][] grid; // The Game board
+//	private int ply;
+//
+//	// Constructor for the Agent
+//	public Agent(int[][] grid, Coordinate start, Coordinate goal)
+//	{
+//		this.start = new Node(null, start, 1);
+//		this.goal = goal;
+//		this.OPEN = new LinkedList<Node>();
+//		this.OPEN.add(0, this.start);
+//		this.CLOSED = new LinkedList<Node>();
+//		this.grid = grid;
+//		this.ply = 2;
+//	}
+//
+//	public String breadthFirstSearch(Coordinate start, Coordinate goal)
+//	{
+//		String test = "No solution";
+//		while (test.equals("No solution") && this.ply < 50)
+//		{
+//			test = breadthFirstSearch(start, goal, this.ply);
+//			// System.out.println(test + " " + this.ply);
+//			this.OPEN = new LinkedList<Node>();
+//			this.start = new Node(null, start, 1);
+//			this.OPEN.add(0, this.start);
+//			root = null;
+//			this.CLOSED = new LinkedList<Node>();
+//			this.ply = this.ply + 1;
+//		}
+//		this.ply = 2;
+//		return test;
+//	}
+//
+//	// Method that performs a breadth first search to optimally solve
+//	// the Rook Maze problem
+//	public String breadthFirstSearch(Coordinate start, Coordinate goal, int ply)
+//	{
+//		// If there are no nodes left to visit then there is no solution
+//		if (this.OPEN.size() != 0)
+//		{
+//			// Getting the first node in our fringe
+//			Node x = this.OPEN.remove(0);
+//
+//			for (int i = 0; i < this.CLOSED.size(); i++)
+//			{
+//				if (x.level < this.CLOSED.get(i).level)
+//				{
+//					this.CLOSED.remove(i);
+//				}
+//			}
+//			// Checking to see if our node is the goal point
+//			if (x.getData().getIndex() == goal.getIndex())
+//			{
+//				// If it is then we count all the moves it took to get
+//				// to this state as well as construct the path
+//				int count = 0;
+//				String path = "";
+//				for (Node p = x; p != null; p = p.getParent())
+//				{
+//					// Constructing the path
+//					if (p.getParent() != null)
+//					{
+//						if (p.getParent().getData().getX() > p.getData().getX())
+//						{
+//							path = "U" + path;
+//						}
+//						else if (p.getParent().getData().getX() < p.getData()
+//								.getX())
+//						{
+//							path = "D" + path;
+//						}
+//						else if (p.getParent().getData().getY() > p.getData()
+//								.getY())
+//						{
+//							path = "L" + path;
+//						}
+//						else if (p.getParent().getData().getY() < p.getData()
+//								.getY())
+//						{
+//							path = "R" + path;
+//						}
+//					}
+//					count++;
+//				}
+//				// Must subtract 1 because it counts nodes instead of moves
+//				// between nodes
+//				return "Path: " + path + " Move Count: " + (count - 1);
+//			}
+//
+//			// If it is not the goal, we add it to the tree in our breadth first
+//			// search
+//			// System.out.println("Index: " + x.getData().getIndex() + " Level:
+//			// " + x.level);
+//			addNode(x.getParent(), x);
+//
+//			// We also add it to our Closed list so we don't visit it twice
+//			this.CLOSED.add(x);
+//
+//			// Moving down on the game board
+//			// First we make sure we don't move off of the game board
+//			if ((x.getData().getX() + x.getData().getValue()) < grid.length)
+//			{
+//				// Finding the index of our new location
+//				int newIndex = ((x.getData().getX() + x.getData().getValue())
+//						* grid.length) + x.getData().getY();
+//
+//				// Making sure the new location has not already been visited
+//				// or is already in our fringe
+//				boolean found = false;
+//				boolean found1 = false;
+//				for (int i = 0; i < this.CLOSED.size(); i++)
+//				{
+//					if (this.CLOSED.get(i).getData().getIndex() == newIndex)
+//					{
+//						found = true;
+//					}
+//				}
+//				for (int i = 0; i < this.OPEN.size(); i++)
+//				{
+//					if (this.OPEN.get(i).getData().getIndex() == newIndex)
+//					{
+//						found1 = true;
+//					}
+//				}
+//
+//				// Adding the new location to our fringe
+//				if (found == false && found1 == false)
+//				{
+//					Coordinate newCoord = new Coordinate(
+//							(x.getData().getX() + x.getData().getValue()),
+//							x.getData().getY(),
+//							grid[(x.getData().getX()
+//									+ x.getData().getValue())][x.getData()
+//											.getY()],
+//							newIndex);
+//
+//					if (x.level < ply)
+//					{
+//						// System.out.println("Test");
+//						Node newNode = new Node(x, newCoord, x.level + 1);
+//						this.OPEN.add(0, newNode);
+//					}
+//				}
+//			}
+//
+//			// Moving up on the game board
+//			// First we make sure we don't move off of the game board
+//			if ((x.getData().getX() - x.getData().getValue()) >= 0)
+//			{
+//				// Finding the index of our new location
+//				int newIndex = ((x.getData().getX() - x.getData().getValue())
+//						* grid.length) + x.getData().getY();
+//
+//				// Making sure the new location has not already been visited
+//				// or is already in our fringe
+//				boolean found = false;
+//				boolean found1 = false;
+//				for (int i = 0; i < this.CLOSED.size(); i++)
+//				{
+//					if (this.CLOSED.get(i).getData().getIndex() == newIndex)
+//					{
+//						found = true;
+//					}
+//				}
+//				for (int i = 0; i < this.OPEN.size(); i++)
+//				{
+//					if (this.OPEN.get(i).getData().getIndex() == newIndex)
+//					{
+//						found1 = true;
+//					}
+//				}
+//
+//				// Adding the new location to our fringe
+//				if (found == false && found1 == false)
+//				{
+//					Coordinate newCoord = new Coordinate(
+//							(x.getData().getX() - x.getData().getValue()),
+//							x.getData().getY(),
+//							grid[(x.getData().getX()
+//									- x.getData().getValue())][x.getData()
+//											.getY()],
+//							newIndex);
+//
+//					if (x.level < ply)
+//					{
+//						// System.out.println("Test");
+//						Node newNode = new Node(x, newCoord, x.level + 1);
+//						this.OPEN.add(0, newNode);
+//					}
+//				}
+//			}
+//
+//			// Moving left on the game board
+//			// First we make sure we don't move off of the game board
+//			if ((x.getData().getY() - x.getData().getValue()) >= 0)
+//			{
+//				// Finding the index of our new location
+//				int newIndex = (x.getData().getX() * grid.length)
+//						+ (x.getData().getY() - x.getData().getValue());
+//
+//				// Making sure the new location has not already been visited
+//				// or is already in our fringe
+//				boolean found = false;
+//				boolean found1 = false;
+//				for (int i = 0; i < this.CLOSED.size(); i++)
+//				{
+//					if (this.CLOSED.get(i).getData().getIndex() == newIndex)
+//					{
+//						found = true;
+//					}
+//				}
+//				for (int i = 0; i < this.OPEN.size(); i++)
+//				{
+//					if (this.OPEN.get(i).getData().getIndex() == newIndex)
+//					{
+//						found1 = true;
+//					}
+//				}
+//
+//				// Adding the new location to our fringe
+//				if (found == false && found1 == false)
+//				{
+//					Coordinate newCoord = new Coordinate(x.getData().getX(),
+//							(x.getData().getY() - x.getData().getValue()),
+//							grid[x.getData().getX()][(x.getData().getY()
+//									- x.getData().getValue())],
+//							newIndex);
+//
+//					if (x.level < ply)
+//					{
+//						// System.out.println("Test");
+//						Node newNode = new Node(x, newCoord, x.level + 1);
+//						this.OPEN.add(0, newNode);
+//					}
+//				}
+//			}
+//
+//			// Moving right on the game board
+//			// First we make sure we don't move off of the game board
+//			if ((x.getData().getY() + x.getData().getValue()) < grid[0].length)
+//			{
+//				// Finding the index of our new location
+//				int newIndex = ((x.getData().getX()) * grid.length)
+//						+ (x.getData().getY() + x.getData().getValue());
+//
+//				// Making sure the new location has not already been visited
+//				// or is already in our fringe
+//				boolean found = false;
+//				boolean found1 = false;
+//				for (int i = 0; i < this.CLOSED.size(); i++)
+//				{
+//					if (this.CLOSED.get(i).getData().getIndex() == newIndex)
+//					{
+//						found = true;
+//					}
+//				}
+//				for (int i = 0; i < this.OPEN.size(); i++)
+//				{
+//					if (this.OPEN.get(i).getData().getIndex() == newIndex)
+//					{
+//						found1 = true;
+//					}
+//				}
+//
+//				// Adding the new location to our fringe
+//				if (found == false && found1 == false)
+//				{
+//					Coordinate newCoord = new Coordinate(x.getData().getX(),
+//							(x.getData().getY() + x.getData().getValue()),
+//							grid[x.getData().getX()][(x.getData().getY()
+//									+ x.getData().getValue())],
+//							newIndex);
+//					if (x.level < ply)
+//					{
+//						// System.out.println("Test");
+//						Node newNode = new Node(x, newCoord, x.level + 1);
+//						this.OPEN.add(0, newNode);
+//					}
+//				}
+//			}
+//
+//			// for (int i = 0; i < this.OPEN.size(); i++)
+//			// {
+//			// System.out.print(this.OPEN.get(i).getData().getIndex() + " ");
+//			// }
+//			// System.out.println();
+//
+//			// Moving on to the next node
+//			return breadthFirstSearch(start, goal, ply);
+//		}
+//
+//		// If there are no more states in the OPEN list (fringe)
+//		// there is No solution
+//		return "No solution";
+//	}
+//
+//	// The root of the tree used in our breadth first search
+//	public Node root;
+//
+//	// Function to add a node to our tree
+//	// A node can have a maximum of four children, for
+//	// the four directions that can be traveled
+//	public void addNode(Node parent, Node newNode)
+//	{
+//		// The tree is empty
+//		if (root == null)
+//		{
+//			root = newNode;
+//		}
+//		// Parent node has no children
+//		else if (parent.getChild1() == null)
+//		{
+//			parent.setChild1(newNode);
+//		}
+//		// Parent node has one child
+//		else if (parent.getChild2() == null)
+//		{
+//			parent.setChild2(newNode);
+//		}
+//		// Parent node has two children
+//		else if (parent.getChild3() == null)
+//		{
+//			parent.setChild3(newNode);
+//		}
+//		// Parent node has 3 children
+//		else if (parent.getChild4() == null)
+//		{
+//			parent.setChild4(newNode);
+//		}
+//	}
+
+}
